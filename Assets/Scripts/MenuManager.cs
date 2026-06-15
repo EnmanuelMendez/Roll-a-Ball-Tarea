@@ -7,7 +7,7 @@ public class MenuManager : MonoBehaviour {
 
 	// Use this for initialization
 	public void Jugar() {
-		SceneManager.LoadScene ("Nivel1");
+		SceneManager.LoadScene ("Scenes");
 	}
 
 	public  void Salir(){
