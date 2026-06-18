@@ -16,11 +16,23 @@ public class GameManager : MonoBehaviour
 	{
 		Debug.Log("GameManager iniciado en " + gameObject.name);
 		tiempoActual = tiempoInicial;
+
+		// Buscar textos automáticamente si no están asignados
+		if (textoReloj == null)
+		{
+			GameObject obj = GameObject.Find("TextoReloj");
+			if (obj != null) textoReloj = obj.GetComponent<Text>();
+		}
+		if (textoVictoria == null)
+		{
+			GameObject obj = GameObject.Find("TextoVictoria");
+			if (obj != null) textoVictoria = obj.GetComponent<Text>();
+		}
+
 		if (textoVictoria != null)
 			textoVictoria.gameObject.SetActive(false);
-		Time.timeScale = 1f;
 
-		// Calcular el índice del siguiente nivel
+		Time.timeScale = 1f;
 		siguienteNivelIndex = SceneManager.GetActiveScene().buildIndex + 1;
 	}
 
@@ -28,7 +40,8 @@ public class GameManager : MonoBehaviour
 	{
 		if (juegoTerminado) return;
 		tiempoActual -= Time.deltaTime;
-		textoReloj.text = "Tiempo: " + Mathf.Max(0, Mathf.CeilToInt(tiempoActual)).ToString();
+		if (textoReloj != null)
+			textoReloj.text = "Tiempo: " + Mathf.Max(0, Mathf.CeilToInt(tiempoActual)).ToString();
 		if (tiempoActual <= 0f && !juegoTerminado)
 			PerderJuego();
 	}
@@ -37,8 +50,11 @@ public class GameManager : MonoBehaviour
 	{
 		if (juegoTerminado) return;
 		juegoTerminado = true;
-		textoVictoria.text = "¡Ganaste!";
-		textoVictoria.gameObject.SetActive(true);
+		if (textoVictoria != null)
+		{
+			textoVictoria.text = "¡Ganaste!";
+			textoVictoria.gameObject.SetActive(true);
+		}
 		Time.timeScale = 0f;
 		StartCoroutine(EsperarYCargarSiguiente());
 	}
@@ -61,12 +77,10 @@ public class GameManager : MonoBehaviour
 		Time.timeScale = 1f;
 		if (siguienteNivelIndex < SceneManager.sceneCountInBuildSettings)
 		{
-			Debug.Log("Cargando siguiente nivel (índice " + siguienteNivelIndex + ")...");
 			SceneManager.LoadScene(siguienteNivelIndex);
 		}
 		else
 		{
-			Debug.Log("Último nivel completado. Volviendo al MenuPrincipal...");
 			SceneManager.LoadScene("MenuPrincipal");
 		}
 	}

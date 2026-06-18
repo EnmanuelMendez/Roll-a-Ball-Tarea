@@ -8,9 +8,9 @@ public class JugadorController : MonoBehaviour
     private Rigidbody rb;
     private GameManager gameManager;
 
-    public float velocidad = 2f;
+    public float velocidad = 20f;
     private int contador;
-    public int totalColeccionables = 12; // Configurable por nivel desde el Inspector
+    public int totalColeccionables = 12;
     public Text textoContador, textoGanar;
     public GameObject textoVictoria;
 
@@ -18,16 +18,33 @@ public class JugadorController : MonoBehaviour
     {
         if (velocidad <= 0f)
         {
-            velocidad = 2f;
+            velocidad = 20f;
         }
 
         rb = GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.None;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        // Buscar textos automáticamente si no están asignados
+        if (textoContador == null)
+        {
+            GameObject obj = GameObject.Find("TextoContador");
+            if (obj != null) textoContador = obj.GetComponent<Text>();
+        }
+
         contador = 0;
-        setTextoContador();
+        if (textoContador != null)
+            setTextoContador();
+
         if (textoGanar != null)
             textoGanar.text = "";
 
         gameManager = FindObjectOfType<GameManager>();
+
+        if (PlayerPrefs.HasKey("Velocidad"))
+        {
+            velocidad = PlayerPrefs.GetFloat("Velocidad");
+        }
     }
 
     void FixedUpdate()
@@ -36,7 +53,7 @@ public class JugadorController : MonoBehaviour
         float movimientoV = Input.GetAxis("Vertical");
 
         Vector3 movimiento = new Vector3(movimientoH, 0.0f, movimientoV);
-        rb.AddForce(movimiento * velocidad);
+        rb.AddForce(movimiento * velocidad, ForceMode.Force);
     }
 
     void OnTriggerEnter(Collider other)
@@ -51,11 +68,13 @@ public class JugadorController : MonoBehaviour
 
     void setTextoContador()
     {
-        textoContador.text = "Contador: " + contador.ToString() + " / " + totalColeccionables.ToString();
+        if (textoContador != null)
+            textoContador.text = "Contador: " + contador.ToString() + " / " + totalColeccionables.ToString();
 
         if (contador >= totalColeccionables)
         {
-            gameManager.GanarJuego();
+            if (gameManager != null)
+                gameManager.GanarJuego();
         }
     }
 }

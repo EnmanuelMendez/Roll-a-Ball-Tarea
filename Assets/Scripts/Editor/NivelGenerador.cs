@@ -318,15 +318,22 @@ public class NivelGenerador : EditorWindow
         plataforma.transform.position = posPlataforma;
         plataforma.transform.localScale = new Vector3(4, 0.5f, 4);
 
-        // Rampa
+        // Rampa - más larga para ángulo más suave
         GameObject rampa = GameObject.CreatePrimitive(PrimitiveType.Cube);
         rampa.name = "Rampa_" + altura;
-        float rampaPosY = altura / 2f;
-        float rampaPosZ = posPlataforma.z - 3f;
-        rampa.transform.position = new Vector3(posPlataforma.x, rampaPosY, rampaPosZ);
-        rampa.transform.localScale = new Vector3(2, 0.2f, 4);
-        float angulo = Mathf.Atan2(altura, 3f) * Mathf.Rad2Deg;
+        // Largo de rampa proporcional a la altura (más larga = más fácil de subir)
+        float largoRampa = altura * 5f; // Rampa 5 veces más larga que alta
+        if (largoRampa < 4f) largoRampa = 4f;
+        float angulo = Mathf.Atan2(altura, largoRampa) * Mathf.Rad2Deg;
+        // Posicionar rampa: centro entre el suelo y la plataforma
+        float rampaCentroZ = posPlataforma.z - (largoRampa / 2f) - 1f;
+        float rampaCentroY = altura / 2f;
+        rampa.transform.position = new Vector3(posPlataforma.x, rampaCentroY, rampaCentroZ);
+        rampa.transform.localScale = new Vector3(2.5f, 0.15f, largoRampa);
         rampa.transform.rotation = Quaternion.Euler(angulo, 0, 0);
+
+        // Añadir fricción alta para que la bola no resbale
+        rampa.AddComponent<ConfigurarRampa>();
     }
 
     void CrearColeccionable(Vector3 posicion)
@@ -512,29 +519,9 @@ public class NivelGenerador : EditorWindow
 
         panelPausa.SetActive(false);
 
-        // Crear PausaManager GameObject
+        // Crear PausaManager GameObject (se auto-configura en Awake)
         GameObject pausaGO = new GameObject("PausaManager");
-        PausaManager pm = pausaGO.AddComponent<PausaManager>();
-        pm.panelPausa = panelPausa;
-
-        // Asignar eventos a botones
-        Button[] botones = panelPausa.GetComponentsInChildren<Button>(true);
-        foreach (Button btn in botones)
-        {
-            string nombre = btn.gameObject.name;
-            if (nombre == "BtnReanudar")
-            {
-                btn.onClick.AddListener(pm.Reanudar);
-            }
-            else if (nombre == "BtnReiniciar")
-            {
-                btn.onClick.AddListener(pm.ReiniciarNivel);
-            }
-            else if (nombre == "BtnMenu")
-            {
-                btn.onClick.AddListener(pm.IrAlMenu);
-            }
-        }
+        pausaGO.AddComponent<PausaManager>();
     }
 
     void CrearBotonPausa(GameObject parent, string nombre, string texto, Vector2 posicion)
