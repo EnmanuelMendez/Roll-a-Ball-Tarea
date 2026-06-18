@@ -50,6 +50,9 @@
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\JugadorController.cs" />
      <Compile Include="Assets\Scripts\MenuManager.cs" />
+     <Compile Include="Assets\Scripts\MoverObstaculo.cs" />
+     <Compile Include="Assets\Scripts\OpcionesManager.cs" />
+     <Compile Include="Assets\Scripts\PausaManager.cs" />
      <Compile Include="Assets\Scripts\Rotador.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

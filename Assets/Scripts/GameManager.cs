@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class GameManager : MonoBehaviour
 	public Text textoReloj;
 	public Text textoVictoria;
 	private bool juegoTerminado = false;
+	private int siguienteNivelIndex;
 
 	void Start()
 	{
@@ -17,6 +19,9 @@ public class GameManager : MonoBehaviour
 		if (textoVictoria != null)
 			textoVictoria.gameObject.SetActive(false);
 		Time.timeScale = 1f;
+
+		// Calcular el índice del siguiente nivel
+		siguienteNivelIndex = SceneManager.GetActiveScene().buildIndex + 1;
 	}
 
 	void Update()
@@ -35,25 +40,41 @@ public class GameManager : MonoBehaviour
 		textoVictoria.text = "¡Ganaste!";
 		textoVictoria.gameObject.SetActive(true);
 		Time.timeScale = 0f;
-		// Usar Invoke con tiempo real (sin corrutina)
-		Invoke("RegresarAlMenuPrincipal", 5f);
-		Debug.Log("GanarJuego ejecutado. Se llamará a RegresarAlMenuPrincipal en 5 segundos.");
+		StartCoroutine(EsperarYCargarSiguiente());
 	}
 
 	void PerderJuego()
 	{
 		juegoTerminado = true;
-		Invoke("RegresarAlMenuPrincipal", 5f);
-		Debug.Log("PerderJuego ejecutado.");
+		if (textoVictoria != null)
+		{
+			textoVictoria.text = "¡Tiempo agotado!";
+			textoVictoria.gameObject.SetActive(true);
+		}
+		Time.timeScale = 0f;
+		StartCoroutine(EsperarYReiniciar());
 	}
 
-	void RegresarAlMenuPrincipal()
+	IEnumerator EsperarYCargarSiguiente()
 	{
-		Debug.Log("RegresarAlMenuPrincipal: Cargando MenuPrincipal (índice 0)...");
+		yield return new WaitForSecondsRealtime(3f);
 		Time.timeScale = 1f;
-		// Cargar por índice (0) que es MenuPrincipal según Build Settings
-		SceneManager.LoadScene("MenuPrincipal");
-		// Este log no se verá si la escena se descarga inmediatamente, pero ayuda
-		Debug.Log("LoadScene ejecutado (si ves esto, la carga empezó)");
+		if (siguienteNivelIndex < SceneManager.sceneCountInBuildSettings)
+		{
+			Debug.Log("Cargando siguiente nivel (índice " + siguienteNivelIndex + ")...");
+			SceneManager.LoadScene(siguienteNivelIndex);
+		}
+		else
+		{
+			Debug.Log("Último nivel completado. Volviendo al MenuPrincipal...");
+			SceneManager.LoadScene("MenuPrincipal");
+		}
+	}
+
+	IEnumerator EsperarYReiniciar()
+	{
+		yield return new WaitForSecondsRealtime(3f);
+		Time.timeScale = 1f;
+		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 	}
 }
